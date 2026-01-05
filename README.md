@@ -1,77 +1,81 @@
-# Substrate Collectables Workshop: Starting Template
+# Substrate Kitties Pallet 🐱
 
-This is the starting template for: https://github.com/shawntabrizi/substrate-collectables-workshop
+A decentralized "CryptoKitties" implementation built with Substrate and the Polkadot SDK. This pallet allows users to create, breed, transfer, and trade unique digital cats on-chain.
 
-## Setup
+## 🚀 Overview
 
-Follow [these installation instructions](https://docs.substrate.io/install/) to set up your development environment to work with the `polkadot-sdk`.
+This pallet serves as a comprehensive example of how to manage complex state transitions and digital ownership in a Substrate runtime. It leverages cryptographic hashing for unique identity and bitwise operations for genetic inheritance.
 
-If you have already set up your computer for the `polkadot-sdk`, you should make sure your rust compiler is up to date with `rustup update`.
+## ✨ Core Features
 
-### test
+### 🧬 DNA & Breeding
 
-To check that your code compiles successfully and is working correctly at each step, you can run:
+Unique DNA: Every kitty has a [u8; 32] DNA string.
 
-```bash
-cargo test
+Genetic Crossover: When breeding, the child's DNA is a mix of the parents' DNA, determined by a random hash generated from the block's entropy (parent hash and block number).
+
+### 💰 Marketplace
+
+Internal Economy: Users can set prices for their kitties using the NativeBalance trait.
+
+Secure Purchases: The buy_kitty function ensures atomic transfers: the buyer gets the kitty, the seller gets the funds, and all storage is updated simultaneously.
+
+### 📦 Optimized Storage
+
+Identity Map: Kitties stores the full details of every cat.
+
+Ownership Index: KittiesOwned uses a BoundedVec to quickly retrieve all kitties belonging to a specific account without scanning the whole state.
+
+### 🛠 Technical Implementation
+
+| Feature                    | Status | Description                                                                     |
+|----------------------------|--------|---------------------------------------------------------------------------------|
+| Storage Items              | -      | -                                                                               |
+| CountForKitties            | Ok     | Value query integer tracking total Kitties                                      |
+| Kitties                    | Ok     | A StorageMap from DNA [u8; 32] to a Kitty struct                                |
+| KittiesOwned               | Ok     | A StorageMap from AccountId to a BoundedVec of DNA hashes (limit: 100 per user) |
+| Dispatchables (Extrinsics) | -      | -                                                                               |
+| create_kitty               | Ok     | Mints a new kitty with a unique DNA based on block entropy                      |
+| breed_kitties              | Ok     | Combines two existing kitties to create a new one                               |
+| transfer                   | Ok     | Moves ownership of a kitty to another account                                   |
+| set_price                  | Ok     | Lists a kitty for sale or updates its price                                     |
+| buy_kitty                  | Ok     | Handles the payment and transfer logic for a sale                               |
+| abandon_kitty              | Ok     | Deletes a kitty from the chain and frees up storage (poor kitty)                |
+
+## 💻 Integration
+
+Rust (Pallet Config)
+
 ```
+impl pallet_kitties::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type NativeBalance = Balances;
+}
 
-This executes the tests included in the `tests.rs` file.
 
-You should run this now to make sure this starting template is compiling successfully for you.
 
-As we add code to your project, we will also update the `tests.rs` file to include more tests for your Pallet.
-
-At the beginning and end of every step, you should be able to run `cargo test` without warning or errors using the latest version of the `tests.rs` file.
-
-If you have either, you should learn from them and fix them!
-
-### rustfmt
-
-To keep your code clean and easy to read, we use a tool called [`rustfmt`](https://github.com/rust-lang/rustfmt). To access all the latest features of `rustfmt` we specifically use the `nightly` toolchain.
-
-To install `rustfmt` for `nightly`:
-
-```bash
-rustup component add rustfmt --toolchain nightly
 ```
-
-To configure the behavior of `rustfmt`, we have included a `rustfmt.toml` file.
-
-Try running:
-
-```bash
-cargo +nightly fmt
+JavaScript (Frontend)
+To fetch a user's kitties using @polkadot/api:
 ```
+const dnas = await api.query.kittiesPallet.kittiesOwned(ALICE_ADDRESS);
+const details = await api.query.kittiesPallet.kitties.multi(dnas);
+console.table(details.map(d => d.unwrap().toJSON()));
 
-You shouldn't see any changes this time around, but as you write more code, you will be able to see `cargo +nightly fmt` make everything look pretty, consistent, and easy to read.
 
-> We recommend you run `cargo +nightly fmt` after every step!
 
-### clippy
-
-[Clippy](https://github.com/rust-lang/rust-clippy) is a collection of lints to catch common mistakes and improve your Rust code. We also use the `nightly` toolchain here to gain access to the latest features.
-
-To install `clippy` for `nightly`:
-
-```bash
-rustup component add clippy
 ```
+🛡️ Safety & Security
 
-Try running:
+Checked Math: Uses checked_add to prevent total count overflows.
 
-```bash
-cargo +nightly clippy
-```
+Panic Protection: Uses ensure! to check for duplicates and ownership before every write operation.
 
-Again, you shouldn't see any errors here, but as you write code for this tutorial, `clippy` can be used to help improve the quality of your code.
+Bounded Collections: KittiesOwned is bounded to prevent storage bloat and "Weight" attacks.
 
-## Cheat Sheet
+👤 Author
 
-You should run these 3 commands at the end of every step without any errors or warnings.
+Junior Developer | Rust & Node.js Enthusiast
+Currently exploring the Polkadot ecosystem and building custom runtimes. I am open to mentorship, project ideas, and collaboration!
 
-```bash
-cargo +nightly fmt
-cargo +nightly clippy
-cargo test
-```
+Created as part of the Polkadot Blockchain Training.
